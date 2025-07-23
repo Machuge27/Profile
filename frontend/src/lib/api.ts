@@ -13,9 +13,10 @@ import type {
   LoginCredentials,
 } from "@/types/api";
 
-const API_BASE_URL = "http://localhost:8000/api";
-// const API_BASE_URL = 'https://mutaiprofile.pythonanywhere.com/api';
+// const API_BASE_URL = "http://localhost:8000/api";
+const API_BASE_URL = 'https://mutaiprofile.pythonanywhere.com/api';
 
+// Follow APIs documentation
 class ApiClient {
   private baseURL: string;
 
@@ -210,6 +211,120 @@ class ApiClient {
   logout(): void {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+  }
+
+  // --- PROJECTS ---
+  async createProject(data: Partial<Project>): Promise<Project> {
+    return this.request<Project>("/admin/projects/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+  async updateProject(slug: string, data: Partial<Project>): Promise<Project> {
+    return this.request<Project>(`/admin/projects/${slug}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+  async deleteProject(slug: string): Promise<void> {
+    return this.request<void>(`/admin/projects/${slug}/`, {
+      method: "DELETE",
+    });
+  }
+
+  // --- EXPERIENCE ---
+  async createExperience(data: Partial<Experience>): Promise<Experience> {
+    return this.request<Experience>("/admin/experience/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+  async updateExperience(
+    id: number,
+    data: Partial<Experience>
+  ): Promise<Experience> {
+    return this.request<Experience>(`/admin/experience/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+  async deleteExperience(id: number): Promise<void> {
+    return this.request<void>(`/admin/experience/${id}/`, {
+      method: "DELETE",
+    });
+  }
+
+  // --- EDUCATION ---
+  async createEducation(data: Partial<Education>): Promise<Education> {
+    return this.request<Education>("/admin/education/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+  async updateEducation(
+    id: number,
+    data: Partial<Education>
+  ): Promise<Education> {
+    return this.request<Education>(`/admin/education/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+  async deleteEducation(id: number): Promise<void> {
+    return this.request<void>(`/admin/education/${id}/`, {
+      method: "DELETE",
+    });
+  }
+
+  // --- TESTIMONIALS ---
+  async createTestimonial(data: Partial<Testimonial>): Promise<Testimonial> {
+    return this.request<Testimonial>("/admin/testimonials/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+  async updateTestimonial(
+    id: number,
+    data: Partial<Testimonial>
+  ): Promise<Testimonial> {
+    return this.request<Testimonial>(`/admin/testimonials/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+  async deleteTestimonial(id: number): Promise<void> {
+    return this.request<void>(`/admin/testimonials/${id}/`, {
+      method: "DELETE",
+    });
+  }
+
+  // --- BLOG POSTS ---
+  async createBlogPost(data: Partial<BlogPost>): Promise<BlogPost> {
+    return this.request<BlogPost>("/admin/blogs/", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+  async updateBlogPost(
+    slug: string,
+    data: Partial<BlogPost>
+  ): Promise<BlogPost> {
+    return this.request<BlogPost>(`/admin/blogs/${slug}/`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+  async deleteBlogPost(slug: string): Promise<void> {
+    return this.request<void>(`/admin/blogs/${slug}/`, {
+      method: "DELETE",
+    });
+  }
+
+  // --- MESSAGES (Contact Form) ---
+  async getMessages(): Promise<ContactForm[]> {
+    // If your backend supports listing messages, implement here.
+    // Placeholder: return [];
+    return [];
   }
 }
 

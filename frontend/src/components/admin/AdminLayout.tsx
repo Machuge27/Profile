@@ -41,7 +41,7 @@ export function AdminLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="border-b bg-card">
         <div className="flex h-16 items-center px-4">
@@ -49,9 +49,10 @@ export function AdminLayout() {
             variant="ghost"
             size="icon"
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="mr-4"
+            className="mr-4 md:hidden"
+            aria-label="Toggle sidebar"
           >
-            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+            {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
           <h1 className="text-xl font-semibold">Admin Panel</h1>
           <div className="ml-auto">
@@ -63,12 +64,18 @@ export function AdminLayout() {
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex flex-1 min-h-0">
         {/* Sidebar */}
-        <aside className={cn(
-          "border-r bg-card transition-all duration-300",
-          sidebarOpen ? "w-64" : "w-0 overflow-hidden"
-        )}>
+        <aside
+          className={cn(
+            "fixed z-40 inset-y-0 left-0 bg-card border-r transition-all duration-300 md:static md:translate-x-0 md:w-64",
+            sidebarOpen
+              ? "w-64 translate-x-0"
+              : "-translate-x-full w-0 overflow-hidden",
+            "md:block"
+          )}
+          style={{ minWidth: sidebarOpen ? undefined : 0 }}
+        >
           <nav className="p-4 space-y-2">
             {adminNavItems.map((item) => (
               <NavLink
@@ -82,6 +89,7 @@ export function AdminLayout() {
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   )
                 }
+                onClick={() => setSidebarOpen(false)}
               >
                 <item.icon className="h-4 w-4 mr-3" />
                 {item.title}
@@ -90,8 +98,17 @@ export function AdminLayout() {
           </nav>
         </aside>
 
+        {/* Overlay for mobile sidebar */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/30 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+          />
+        )}
+
         {/* Main content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 md:p-6 overflow-x-auto">
           <Outlet />
         </main>
       </div>
