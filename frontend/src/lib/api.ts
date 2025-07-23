@@ -16,6 +16,7 @@ import type {
 // const API_BASE_URL = "http://localhost:8000/api";
 const API_BASE_URL = 'https://mutaiprofile.pythonanywhere.com/api';
 
+// Follow APIs documentation
 class ApiClient {
   private baseURL: string;
 
