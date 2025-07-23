@@ -35,19 +35,21 @@ class Profile(models.Model):
     profile_picture = models.ImageField(upload_to=upload_to_profile, blank=True, null=True)
     location = models.CharField(max_length=100, blank=True)
     skills = models.JSONField(default=list, help_text="List of skills")
-    
+    email = models.EmailField(default="mutaihillary3912@gmail.com", max_length=254)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+
     # Social Links
     github_url = models.URLField(blank=True, null=True)
     linkedin_url = models.URLField(blank=True, null=True)
     twitter_url = models.URLField(blank=True, null=True)
     website_url = models.URLField(blank=True, null=True)
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = "Profile"
         verbose_name_plural = "Profiles"
