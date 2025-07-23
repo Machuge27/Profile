@@ -16,27 +16,48 @@ class UserSerializer(serializers.ModelSerializer):
 
 class ProfileSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
-    
+
     class Meta:
         model = Profile
         fields = [
-            'id', 'user', 'name', 'bio', 'profile_picture', 'location', 
-            'skills', 'github_url', 'linkedin_url', 'twitter_url', 'website_url',
-            'created_at', 'updated_at'
+            "id",
+            "user",
+            "name",
+            "phone",
+            "email",
+            "bio",
+            "profile_picture",
+            "location",
+            "skills",
+            "github_url",
+            "linkedin_url",
+            "twitter_url",
+            "website_url",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
 
 class ProfileUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating profile (admin only)"""
-    
+
     class Meta:
         model = Profile
         fields = [
-            'name', 'bio', 'profile_picture', 'location', 
-            'skills', 'github_url', 'linkedin_url', 'twitter_url', 'website_url'
+            "name",
+            "bio",
+            "profile_picture",
+            "location",
+            "phone",
+            "email",
+            "skills",
+            "github_url",
+            "linkedin_url",
+            "twitter_url",
+            "website_url",
         ]
-    
+
     def validate_skills(self, value):
         """Validate that skills is a list"""
         if not isinstance(value, list):
@@ -277,6 +298,15 @@ class PublicProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = [
-            'name', 'bio', 'profile_picture', 'location',
-            'skills', 'github_url', 'linkedin_url', 'twitter_url', 'website_url'
+            "name",
+            "bio",
+            "profile_picture",
+            "location",
+            "email",
+            "phone",
+            "skills",
+            "github_url",
+            "linkedin_url",
+            "twitter_url",
+            "website_url",
         ]

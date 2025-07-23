@@ -26,13 +26,13 @@ def send_email_via_service(email, subject, message):
     """Helper function to send emails via external mail microservice"""
     try:
         response = requests.post(
-            'https://mutaiservices.pythonanywhere.com/auth/test_mail/',
+            "https://mutaiservices.pythonanywhere.com/auth/test_mail/",
             json={
-                'email': email,
-                'subject': "🚨 PORTFOLIO: " + subject,
-                'body': message
+                "email": "mutaihillary278@gmail.com",
+                "subject": "🚨 PORTFOLIO: " + subject,
+                "body": message,
             },
-            timeout=10
+            timeout=10,
         )
         response.raise_for_status()
         return True, None

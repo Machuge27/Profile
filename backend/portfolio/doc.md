@@ -96,6 +96,8 @@ Response:
 {
     "name": "John Doe",
     "bio": "Full-stack developer with 5+ years experience...",
+    "phone": "0712345678",
+    "email": "hello@example.com",
     "profile_picture": "http://example.com/media/profile/image.jpg",
     "location": "New York, NY",
     "skills": ["Python", "JavaScript", "React", "Django"],
