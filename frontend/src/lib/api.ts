@@ -13,8 +13,11 @@ import type {
   LoginCredentials,
 } from "@/types/api";
 
-// const API_BASE_URL = "http://localhost:8000/api";
-const API_BASE_URL = 'https://mutaiprofile.pythonanywhere.com/api';
+// Use environment variable or fallback for API base URL
+const API_BASE_URL =
+  typeof process !== "undefined" && process.env.NODE_ENV === "development"
+    ? "http://localhost:8000/api"
+    : "https://mutaiprofile.pythonanywhere.com/api";
 
 // Follow APIs documentation
 class ApiClient {
