@@ -24,11 +24,20 @@ const Navigation = () => {
     { href: '#contact', label: 'Contact' },
   ];
 
+
+  // Get profile from localStorage
+  let profile: any = null;
+  try {
+    const stored = localStorage.getItem('profile');
+    if (stored) profile = JSON.parse(stored);
+  } catch {}
+
   const socialLinks = [
-    { href: '#', icon: Github, label: 'GitHub' },
-    { href: '#', icon: Linkedin, label: 'LinkedIn' },
-    { href: '#', icon: Mail, label: 'Email' },
-  ];
+    profile?.github_url && profile.github_url.trim() ? { href: profile.github_url, icon: Github, label: 'GitHub' } : null,
+    profile?.linkedin_url && profile.linkedin_url.trim() ? { href: profile.linkedin_url, icon: Linkedin, label: 'LinkedIn' } : null,
+    profile?.twitter_url && profile.twitter_url.trim() ? { href: profile.twitter_url, icon: Mail, label: 'Twitter' } : null,
+    profile?.website_url && profile.website_url.trim() ? { href: profile.website_url, icon: Mail, label: 'Website' } : null,
+  ].filter(Boolean);
 
   return (
     <nav
@@ -66,6 +75,9 @@ const Navigation = () => {
           <div className="flex items-center space-x-4">
             {/* Social Links - Hidden on mobile */}
             <div className="hidden lg:flex items-center space-x-2">
+              {socialLinks.length === 0 && (
+                <span className="text-xs text-muted-foreground">No social links</span>
+              )}
               {socialLinks.map((link) => (
                 <Button
                   key={link.label}
@@ -74,7 +86,7 @@ const Navigation = () => {
                   asChild
                   className="hover:bg-accent"
                 >
-                  <a href={link.href} aria-label={link.label}>
+                  <a href={link.href} aria-label={link.label} target="_blank" rel="noopener noreferrer">
                     <link.icon className="w-4 h-4" />
                   </a>
                 </Button>
@@ -110,6 +122,9 @@ const Navigation = () => {
               
               {/* Mobile Social Links */}
               <div className="flex items-center space-x-2 px-3 pt-4">
+                {socialLinks.length === 0 && (
+                  <span className="text-xs text-muted-foreground">No social links</span>
+                )}
                 {socialLinks.map((link) => (
                   <Button
                     key={link.label}
@@ -118,7 +133,7 @@ const Navigation = () => {
                     asChild
                     className="hover:bg-accent"
                   >
-                    <a href={link.href} aria-label={link.label}>
+                    <a href={link.href} aria-label={link.label} target="_blank" rel="noopener noreferrer">
                       <link.icon className="w-4 h-4" />
                     </a>
                   </Button>

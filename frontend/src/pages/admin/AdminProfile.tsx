@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useProfile } from "@/hooks/useApi";
+import { useEffect } from "react";
+import { apiClient } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
@@ -26,28 +27,59 @@ type ProfileForm = z.infer<typeof profileSchema>;
 
 export default function AdminProfile() {
   const [loading, setLoading] = useState(false);
-  const { data: profile, isLoading } = useProfile();
-  const { toast } = useToast();
 
+  const { toast } = useToast();
   const form = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: profile?.name || "",
-      bio: profile?.bio || "",
-      location: profile?.location || "",
-      skills: profile?.skills?.join(", ") || "",
-      github_url: profile?.github_url || "",
-      linkedin_url: profile?.linkedin_url || "",
-      twitter_url: profile?.twitter_url || "",
-      website_url: profile?.website_url || "",
+      name: "",
+      bio: "",
+      location: "",
+      skills: "",
+      github_url: "",
+      linkedin_url: "",
+      twitter_url: "",
+      website_url: "",
     },
   });
+
+  // Fetch profile on mount and set form values
+  useEffect(() => {
+    setLoading(true);
+    apiClient.getProfile()
+      .then((profile) => {
+        form.reset({
+          name: profile.name || "",
+          bio: profile.bio || "",
+          location: profile.location || "",
+          skills: Array.isArray(profile.skills) ? profile.skills.join(", ") : "",
+          github_url: profile.github_url || "",
+          linkedin_url: profile.linkedin_url || "",
+          twitter_url: profile.twitter_url || "",
+          website_url: profile.website_url || "",
+        });
+      })
+      .catch(() => {
+        toast({
+          title: "Error",
+          description: "Failed to load profile data.",
+          variant: "destructive",
+        });
+      })
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const onSubmit = async (data: ProfileForm) => {
     setLoading(true);
     try {
-      // Here you would call the API to update the profile
-      console.log("Profile data:", data);
+      // Prepare payload: convert skills string to array
+      const payload = {
+        ...data,
+        skills: data.skills.split(",").map((s) => s.trim()).filter(Boolean),
+      };
+      await apiClient.updateProfile(payload);
       toast({
         title: "Success",
         description: "Profile updated successfully",
@@ -63,7 +95,7 @@ export default function AdminProfile() {
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-64">
         <Loader2 className="h-8 w-8 animate-spin" />

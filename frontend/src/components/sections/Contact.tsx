@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Phone, MapPin, Send, Github, Linkedin, Twitter } from 'lucide-react';
+import { Mail, Phone, MapPin, Send, Github, Linkedin, Twitter, Globe } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,10 +9,29 @@ import { useToast } from '@/hooks/use-toast';
 
 const Contact = () => {
   const { toast } = useToast();
+
+  // Get profile from localStorage
+  let profile: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    location?: string;
+    github_url?: string;
+    linkedin_url?: string;
+    twitter_url?: string;
+    website_url?: string;
+  } = {};
+  try {
+    const stored = localStorage.getItem('profile');
+    if (stored) profile = JSON.parse(stored);
+  } catch {
+    // ignore
+  }
+
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
+    name: profile?.name || '',
+    email: profile?.email || '',
     subject: '',
     message: '',
   });
@@ -30,15 +49,25 @@ const Contact = () => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Message sent!",
-        description: "Thank you for your message. I'll get back to you soon.",
+      const response = await fetch('http://localhost:8000/api/send-email/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
-      
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      const data = await response.json();
+      if (response.ok && data.message) {
+        toast({
+          title: "Message sent!",
+          description: data.message,
+        });
+        setFormData({ name: profile?.name || '', email: profile?.email || '', subject: '', message: '' });
+      } else {
+        toast({
+          title: "Error",
+          description: data.error || 'Failed to send message. Please try again.',
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -51,46 +80,52 @@ const Contact = () => {
   };
 
   const contactInfo = [
-    {
+    profile.email && profile.email.trim() ? {
       icon: Mail,
       label: 'Email',
-      value: 'john.doe@example.com',
-      href: 'mailto:john.doe@example.com',
-    },
-    {
+      value: profile.email,
+      href: `mailto:${profile.email}`,
+    } : null,
+    profile.phone && profile.phone.trim() ? {
       icon: Phone,
       label: 'Phone',
-      value: '+1 (555) 123-4567',
-      href: 'tel:+15551234567',
-    },
-    {
+      value: profile.phone,
+      href: `tel:${profile.phone}`,
+    } : null,
+    profile.location && profile.location.trim() ? {
       icon: MapPin,
       label: 'Location',
-      value: 'San Francisco, CA',
+      value: profile.location,
       href: null,
-    },
-  ];
+    } : null,
+  ].filter(Boolean);
 
   const socialLinks = [
-    {
+    profile.github_url && profile.github_url.trim() ? {
       icon: Github,
       label: 'GitHub',
-      href: 'https://github.com/johndoe',
+      href: profile.github_url,
       color: 'hover:text-gray-900',
-    },
-    {
+    } : null,
+    profile.linkedin_url && profile.linkedin_url.trim() ? {
       icon: Linkedin,
       label: 'LinkedIn',
-      href: 'https://linkedin.com/in/johndoe',
+      href: profile.linkedin_url,
       color: 'hover:text-blue-600',
-    },
-    {
+    } : null,
+    profile.twitter_url && profile.twitter_url.trim() ? {
       icon: Twitter,
       label: 'Twitter',
-      href: 'https://twitter.com/johndoe',
+      href: profile.twitter_url,
       color: 'hover:text-blue-400',
-    },
-  ];
+    } : null,
+    profile.website_url && profile.website_url.trim() ? {
+      icon: Globe,
+      label: 'Website',
+      href: profile.website_url,
+      color: 'hover:text-primary',
+    } : null,
+  ].filter(Boolean);
 
   return (
     <section id="contact" className="py-20 bg-muted/30">

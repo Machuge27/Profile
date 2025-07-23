@@ -17,6 +17,8 @@ import AdminBlog from "./pages/admin/AdminBlog";
 
 const queryClient = new QueryClient();
 
+
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
