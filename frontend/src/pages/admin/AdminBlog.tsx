@@ -6,9 +6,127 @@ import { Badge } from "@/components/ui/badge";
 import { useBlogPosts } from "@/hooks/useApi";
 import { Loader2 } from "lucide-react";
 import { format } from "date-fns";
+import { apiClient } from "@/lib/api";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+
+function BlogPostForm({ initial, onSave, onCancel, loading }: {
+  initial?: any,
+  onSave: (data: any) => void,
+  onCancel: () => void,
+  loading?: boolean
+}) {
+  const [form, setForm] = useState({
+    title: initial?.title || "",
+    content: initial?.content || "",
+    excerpt: initial?.excerpt || "",
+    tags: initial?.tags?.join(", ") || "",
+    status: initial?.status || "published",
+    is_featured: initial?.is_featured || false,
+    published_at: initial?.published_at ? initial.published_at.slice(0, 16) : "",
+  });
+  const [error, setError] = useState<string | null>(null);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
+  function handleSwitch(val: boolean) {
+    setForm({ ...form, is_featured: val });
+  }
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.title || !form.content || !form.status) {
+      setError("Title, content, and status are required.");
+      return;
+    }
+    if (form.excerpt.length > 500) {
+      setError("Excerpt must be 500 characters or less.");
+      return;
+    }
+    setError(null);
+    onSave({
+      ...form,
+      tags: form.tags.split(",").map((s) => s.trim()).filter(Boolean),
+      published_at: form.published_at ? new Date(form.published_at).toISOString() : undefined,
+    });
+  }
+
+  return (
+    <Dialog open onOpenChange={onCancel}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{initial ? "Edit" : "Add"} Blog Post</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <Input name="title" placeholder="Title" value={form.title} onChange={handleChange} required />
+          <Textarea name="content" placeholder="Content" value={form.content} onChange={handleChange} required />
+          <Textarea name="excerpt" placeholder="Excerpt (max 500 chars)" value={form.excerpt} onChange={handleChange} maxLength={500} />
+          <Input name="tags" placeholder="Tags (comma separated)" value={form.tags} onChange={handleChange} />
+          <select name="status" value={form.status} onChange={handleChange} className="w-full border rounded px-2 py-1">
+            <option value="published">Published</option>
+            <option value="draft">Draft</option>
+          </select>
+          <div className="flex items-center gap-2">
+            <Switch checked={form.is_featured} onCheckedChange={handleSwitch} />
+            <span>Featured</span>
+          </div>
+          <Input name="published_at" type="datetime-local" placeholder="Published At" value={form.published_at} onChange={handleChange} />
+          {error && <div className="text-red-500">{error}</div>}
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>Cancel</Button>
+            <Button type="submit" disabled={loading}>{loading ? "Saving..." : "Save"}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function AdminBlog() {
-  const { data: blogPosts, isLoading } = useBlogPosts();
+  const { data: blogPosts, isLoading, refetch } = useBlogPosts();
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [editPost, setEditPost] = useState<any>(null);
+
+  const handleAdd = () => {
+    setEditPost(null);
+    setShowModal(true);
+  };
+  const handleEdit = (post) => {
+    setEditPost(post);
+    setShowModal(true);
+  };
+  const handleDelete = async (slug: string) => {
+    if (!window.confirm("Delete this blog post?")) return;
+    setIsSaving(true);
+    setError(null);
+    try {
+      await apiClient.deleteBlogPost(slug);
+      refetch?.();
+    } catch (e) {
+      setError("Failed to delete blog post");
+    }
+    setIsSaving(false);
+  };
+  const handleSave = async (data) => {
+    setIsSaving(true);
+    setError(null);
+    try {
+      if (editPost) {
+        await apiClient.updateBlogPost(editPost.slug, data);
+      } else {
+        await apiClient.createBlogPost(data);
+      }
+      setShowModal(false);
+      refetch?.();
+    } catch (e) {
+      setError("Failed to save blog post");
+    }
+    setIsSaving(false);
+  };
 
   if (isLoading) {
     return (
@@ -27,12 +145,20 @@ export default function AdminBlog() {
             Manage your blog posts and articles.
           </p>
         </div>
-        <Button>
+        <Button onClick={handleAdd}>
           <Plus className="h-4 w-4 mr-2" />
           Add Blog Post
         </Button>
       </div>
-
+      {error && <div className="text-red-500">{error}</div>}
+      {showModal && (
+        <BlogPostForm
+          initial={editPost}
+          onSave={handleSave}
+          onCancel={() => setShowModal(false)}
+          loading={isSaving}
+        />
+      )}
       <div className="grid gap-6">
         {blogPosts?.map((post) => (
           <Card key={post.id}>
@@ -55,10 +181,10 @@ export default function AdminBlog() {
                       <Eye className="h-4 w-4" />
                     </a>
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleEdit(post)}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleDelete(post.slug)} disabled={isSaving}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
